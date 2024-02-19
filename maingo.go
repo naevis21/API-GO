@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-// Estrutura para representar um usuário
+// Estrutura pra representar um usuário
 type Usuario struct {
     CPF            int    `json:"cpf"`
     Nome           string `json:"nome"`
@@ -18,17 +19,23 @@ type Usuario struct {
 // Simulando um banco de dados em memória
 var usuarios []Usuario
 
-// Rota para obter todos os contatos
+// Rota pra obter todos os contatos
 func GetUsuarios(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(usuarios)
 }
 
-// Rota para obter um usuário específico
+// Rota pra obter um usuário específico
 func GetUsuario(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
+    cpf, err := strconv.Atoi(params["cpf"])
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        return
+    }
+
     for _, usuario := range usuarios {
-        if usuario.CPF == params["cpf"] {
+        if usuario.CPF == cpf {
             w.Header().Set("Content-Type", "application/json")
             json.NewEncoder(w).Encode(usuario)
             return
@@ -37,7 +44,7 @@ func GetUsuario(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusNotFound)
 }
 
-// Rota para criar um novo usuário
+// Rota pra criar um novo usuário
 func CreateUsuario(w http.ResponseWriter, r *http.Request) {
     var usuario Usuario
     _ = json.NewDecoder(r.Body).Decode(&usuario)
@@ -45,11 +52,17 @@ func CreateUsuario(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusCreated)
 }
 
-// Rota para excluir um usuário
+// Rota pra excluir um usuário
 func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
+    cpf, err := strconv.Atoi(params["cpf"])
+    if err != nil {
+        w.WriteHeader(http.StatusBadRequest)
+        return
+    }
+
     for i, usuario := range usuarios {
-        if usuario.CPF == params["cpf"] {
+        if usuario.CPF == cpf {
             usuarios = append(usuarios[:i], usuarios[i+1:]...)
             w.WriteHeader(http.StatusNoContent)
             return
