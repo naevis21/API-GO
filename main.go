@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Estrutura pra representar um usuário
+// Estrutura para representar um usuário
 type Usuario struct {
     CPF            int    `json:"cpf"`
     Nome           string `json:"nome"`
@@ -19,13 +20,13 @@ type Usuario struct {
 // Simulando um banco de dados em memória
 var usuarios []Usuario
 
-// Rota pra obter todos os contatos
+// Rota para obter todos os contatos
 func GetUsuarios(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(usuarios)
 }
 
-// Rota pra obter um usuário específico
+// Rota para obter um usuário específico
 func GetUsuario(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     cpf, err := strconv.Atoi(params["cpf"])
@@ -44,7 +45,7 @@ func GetUsuario(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusNotFound)
 }
 
-// Rota pra criar um novo usuário
+// Rota para criar um novo usuário
 func CreateUsuario(w http.ResponseWriter, r *http.Request) {
     var usuario Usuario
     _ = json.NewDecoder(r.Body).Decode(&usuario)
@@ -52,7 +53,7 @@ func CreateUsuario(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusCreated)
 }
 
-// Rota pra excluir um usuário
+// Rota para excluir um usuário
 func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     cpf, err := strconv.Atoi(params["cpf"])
@@ -75,7 +76,8 @@ func main() {
     router := mux.NewRouter()
     router.HandleFunc("/usuarios", GetUsuarios).Methods("GET")
     router.HandleFunc("/usuarios/{cpf}", GetUsuario).Methods("GET")
-    router.HandleFunc("/usuarios/{cpf}", CreateUsuario).Methods("POST")
+    router.HandleFunc("/usuarios", CreateUsuario).Methods("POST")
     router.HandleFunc("/usuarios/{cpf}", DeleteUsuario).Methods("DELETE")
+    fmt.Printf("Porta 8000 pronta para ser usada\n")
     log.Fatal(http.ListenAndServe(":8000", router))
 }
